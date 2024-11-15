@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Valorant Scrims Dashboard</title>
+    <title>Recon Dart</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/styles.css">
@@ -10,94 +10,37 @@
 </head>
 <body>
     <div class="header">
-        <img src="assets/logo/logo.png" alt="Recon Dart" class="logo">
+        <h1>Recon Dart</h1>
         <div class="header-buttons">
-            <a href="https://github.com/yourusername/valorant-dashboard" 
+            <a href="https://github.com/yourusername/recondart" 
                target="_blank" 
                class="github-button">
                 <i class="fab fa-github"></i> View on GitHub
             </a>
         </div>
     </div>
-    
-    <div class="nav-tabs">
-        <button class="nav-tab active" data-section="scrims">SCRIMS</button>
-        <button class="nav-tab" data-section="analytics">ANALYTICS</button>
-    </div>
 
-    <div id="scrims-section">
-        <div id="dashboard-container">
-            <div class="dashboard-header">
-                <span class="match-id"></span>
-            </div>
-
-            <div class="upload-container">
-                <div class="dropzone" id="dropzone">
-                    <input type="file" id="fileUpload" accept=".zip" style="display: none;">
-                    <div class="upload-text">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Drop your valorant_scrims.zip here or click to upload</p>
-                        <small>Download example.zip to test the dashboard</small>
-                    </div>
-                </div>
-                <div id="upload-status"></div>
-            </div>
-
-            <div class="filters-container">
-                <div class="filter-group">
-                    <select id="map-filter" class="filter-select">
-                        <option value="">All Maps</option>
-                        <option value="Ascent">Ascent</option>
-                        <option value="Haven">Haven</option>
-                        <option value="Bind">Bind</option>
-                        <option value="Split">Split</option>
-                        <option value="Icebox">Icebox</option>
-                        <option value="Breeze">Breeze</option>
-                        <option value="Fracture">Fracture</option>
-                        <option value="Pearl">Pearl</option>
-                        <option value="Lotus">Lotus</option>
-                        <option value="Sunset">Sunset</option>
-                    </select>
-                </div>
-                <div class="filter-group date-filters">
-                    <input type="date" id="date-from" class="filter-date" />
-                    <span class="date-separator">to</span>
-                    <input type="date" id="date-to" class="filter-date" />
-                </div>
-            </div>
-
-            <div class="games-list">
-                <!-- Games will be populated here -->
-            </div>
-
-            <div class="game-details" style="display: none;">
-                <div class="game-details-header">
-                    <div class="tab-buttons">
-                        <button class="tab-button active" data-tab="team">Team Data</button>
-                        <button class="tab-button" data-tab="player">Player Data</button>
-                        <button class="tab-button" data-tab="economy">Economy Data</button>
-                    </div>
-                    <button id="back-button">Back to Games</button>
-                </div>
-
-                <div class="tab-content" id="team_data" style="display: block;">
-                    <!-- Team data will be populated here -->
-                </div>
-                <div class="tab-content" id="player_data" style="display: none;">
-                    <!-- Player data will be populated here -->
-                </div>
-                <div class="tab-content" id="economy_data" style="display: none;">
-                    <!-- Economy data will be populated here -->
-                </div>
+    <div class="upload-container">
+        <div class="dropzone" id="dropzone">
+            <input type="file" id="fileUpload" accept=".zip" style="display: none;">
+            <div class="upload-text">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drop your valorant_scrims.zip here or click to upload</p>
             </div>
         </div>
+        <div id="upload-status"></div>
     </div>
 
-    <div id="analytics-section">
-        <div class="coming-soon">
-            <i class="fas fa-chart-line"></i>
-            <h2>Analytics Coming Soon</h2>
-            <p>We're working on bringing you detailed analytics and insights!</p>
+    <div class="games-list">
+        <!-- Games will be populated here -->
+    </div>
+
+    <div class="game-details" style="display: none;">
+        <div class="game-details-header">
+            <button id="back-button">Back to Games</button>
+        </div>
+        <div id="game_data" class="game-data-container">
+            <!-- Game data will be populated here -->
         </div>
     </div>
 
