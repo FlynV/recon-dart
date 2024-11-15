@@ -22,9 +22,11 @@ class FileHandler {
                     // Skip if not in correct structure
                     if (pathParts.length < 2) continue;
 
-                    // Get game session ID (folder name)
-                    const gameId = pathParts[0];
-                    const fileName = pathParts[1];
+                    // Get game session ID (folder name with date and map)
+                    const gameId = pathParts[1]; // Gets the folder name
+                    const fileName = pathParts[2]; // Gets the file name
+
+                    if (!gameId || !fileName) continue;
 
                     // Initialize game session if not exists
                     if (!gameFiles.has(gameId)) {

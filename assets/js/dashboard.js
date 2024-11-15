@@ -61,103 +61,128 @@ class DashboardManager {
             const gameItem = this.createGameItem(gameId);
             if (gameItem) gamesList.appendChild(gameItem);
         });
+
+        // Hide upload container after successful load
+        document.querySelector('.upload-container').style.display = 
+            sortedGames.length > 0 ? 'none' : 'block';
     }
 
-    // Update this method in the DashboardManager class
-parseFolderDate(folderPath) {
-    try {
+    parseFolderDate(folderPath) {
+        try {
+            const folderName = folderPath.split('\\').pop() || folderPath;
+            
+            // Extract timestamp part (before the underscore)
+            const timestamp = folderName.split('_')[0];
+            
+            if (!/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/.test(timestamp)) {
+                throw new Error(`Invalid timestamp format: ${timestamp}`);
+            }
+
+            // Convert timestamp to date string
+            const dateString = timestamp.replace(
+                /(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z/,
+                '$1T$2:$3:$4.$5Z'
+            );
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                throw new Error("Invalid date");
+            }
+            
+            return date;
+        } catch (e) {
+            console.error("Error parsing date:", e);
+            throw e;
+        }
+    }
+
+    getMapName(folderPath) {
         const folderName = folderPath.split('\\').pop() || folderPath;
-        
-        // If it's a data file name, skip it
-        if (folderName.endsWith('.csv')) {
-            throw new Error('Not a date folder');
-        }
-
-        // Extract timestamp from folder name
-        const timestamp = folderName;
-        
-        // Create date object
-        const date = new Date(timestamp);
-        
-        if (isNaN(date.getTime())) {
-            throw new Error("Invalid date");
-        }
-        
-        return date;
-    } catch (e) {
-        console.error("Error parsing date:", e);
-        return null;
+        return folderName.split('_')[1] || 'Unknown';
     }
-}
 
-// Update createGameItem method
-createGameItem(gameId) {
-    try {
-        // Skip if not a valid game folder
-        if (gameId.endsWith('.csv')) {
+    createGameItem(gameId) {
+        try {
+            const date = this.parseFolderDate(gameId);
+            const mapName = this.getMapName(gameId);
+            
+            const gameItem = document.createElement('div');
+            gameItem.className = 'game-item';
+            gameItem.setAttribute('data-map', mapName);
+            
+            const formattedDate = date.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+
+            const formattedTime = date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            gameItem.innerHTML = `
+                <div class="game-item-date">
+                    <div class="date">${formattedDate}</div>
+                    <div class="map">${mapName}</div>
+                    <div class="time">${formattedTime}</div>
+                </div>
+            `;
+            
+            gameItem.addEventListener('click', () => this.loadGameDetails(gameId));
+            return gameItem;
+        } catch (e) {
+            console.error("Error creating game item:", e);
             return null;
         }
-
-        const date = new Date(gameId);
-        if (isNaN(date.getTime())) {
-            return null;
-        }
-        
-        const gameItem = document.createElement('div');
-        gameItem.className = 'game-item';
-        
-        const formattedDate = date.toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-        });
-
-        const formattedTime = date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-
-        gameItem.innerHTML = `
-            <div class="game-item-date">
-                <div class="date">${formattedDate}</div>
-                <div class="time">${formattedTime}</div>
-            </div>
-        `;
-        
-        gameItem.addEventListener('click', () => this.loadGameDetails(gameId));
-        return gameItem;
-    } catch (e) {
-        console.error("Error creating game item:", e);
-        return null;
     }
-}
 
     loadGameDetails(gameId) {
         document.querySelector('.games-list').style.display = 'none';
+        document.querySelector('.upload-container').style.display = 'none';
         document.querySelector('.game-details').style.display = 'block';
         
         const gameData = this.games.get(gameId);
         if (!gameData) return;
 
         const container = document.getElementById('game_data');
-        container.innerHTML = '';
+        container.innerHTML = `
+            <div class="game-header">
+                <h2>${this.getMapName(gameId)}</h2>
+                <p>${this.parseFolderDate(gameId).toLocaleString()}</p>
+            </div>
+        `;
 
         // Display each CSV file's data
-        Object.entries(gameData).forEach(([dataType, csvContent]) => {
-            const section = document.createElement('div');
-            section.className = 'data-section';
-            section.innerHTML = `<h3>${dataType}</h3>`;
-            
-            const table = this.createTableFromCSV(csvContent);
-            section.appendChild(table);
-            container.appendChild(section);
+        const dataOrder = ['teams_data', 'player_data', 'kills_timeline', 'economy_data'];
+        
+        dataOrder.forEach(dataType => {
+            if (gameData[dataType]) {
+                const section = document.createElement('div');
+                section.className = 'data-section';
+                section.innerHTML = `<h3>${this.formatDataTypeName(dataType)}</h3>`;
+                
+                const table = this.createTableFromCSV(gameData[dataType]);
+                section.appendChild(table);
+                container.appendChild(section);
+            }
         });
+    }
+
+    formatDataTypeName(dataType) {
+        return dataType
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
     }
 
     showGamesList() {
         document.querySelector('.games-list').style.display = 'flex';
         document.querySelector('.game-details').style.display = 'none';
+        // Show upload container only if no games are loaded
+        document.querySelector('.upload-container').style.display = 
+            this.games.size === 0 ? 'block' : 'none';
     }
 
     createTableFromCSV(csvContent) {
@@ -172,7 +197,7 @@ createGameItem(gameId) {
         const headerRow = document.createElement('tr');
         headers.forEach(header => {
             const th = document.createElement('th');
-            th.textContent = header;
+            th.textContent = header.trim();
             headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -185,7 +210,7 @@ createGameItem(gameId) {
                 const tr = document.createElement('tr');
                 row.split(',').forEach(cell => {
                     const td = document.createElement('td');
-                    td.textContent = cell;
+                    td.textContent = cell.trim();
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);
@@ -196,25 +221,9 @@ createGameItem(gameId) {
         return table;
     }
 
-    parseFolderDate(folderPath) {
-        const folderName = folderPath.split('\\').pop() || folderPath;
-        const timestamp = folderName.split('_')[0];
-        
-        if (!/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/.test(timestamp)) {
-            throw new Error(`Invalid timestamp format: ${timestamp}`);
-        }
-
-        const dateString = timestamp.replace(
-            /(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z/,
-            '$1T$2:$3:$4.$5Z'
-        );
-        
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            throw new Error("Invalid date");
-        }
-        
-        return date;
+    clearData() {
+        this.games.clear();
+        this.showGamesList();
     }
 }
 
