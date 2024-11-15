@@ -14,46 +14,60 @@ class FileHandler {
             // Group files by game session
             const gameFiles = new Map();
 
+            console.log('Files in zip:', Object.keys(zip.files));
+
             for (const [path, zipEntry] of Object.entries(zip.files)) {
                 if (!zipEntry.dir) {
-                    // Split path into components
-                    const pathParts = path.split('/');
+                    console.log('Processing file:', path);
                     
-                    // Skip if not in correct structure
-                    if (pathParts.length < 2) continue;
+                    // Split path and clean it
+                    const pathParts = path.split(/[\/\\]/).filter(part => part.length > 0);
+                    console.log('Path parts:', pathParts);
 
-                    // Get game session ID (folder name with date and map)
-                    const gameId = pathParts[1]; // Gets the folder name
-                    const fileName = pathParts[2]; // Gets the file name
+                    // Expecting: valorant_scrims/2024-03-20T15-30-00-000Z_Ascent/file.csv
+                    if (pathParts.length >= 2) {
+                        const gameId = pathParts[1]; // The folder with timestamp and map
+                        const fileName = pathParts[2]; // The CSV file name
 
-                    if (!gameId || !fileName) continue;
+                        console.log('Game ID:', gameId, 'File:', fileName);
 
-                    // Initialize game session if not exists
-                    if (!gameFiles.has(gameId)) {
-                        gameFiles.set(gameId, {});
-                    }
+                        if (gameId && fileName && fileName.endsWith('.csv')) {
+                            if (!gameFiles.has(gameId)) {
+                                gameFiles.set(gameId, {});
+                            }
 
-                    // Read file content
-                    if (fileName.endsWith('.csv')) {
-                        const content = await zipEntry.async('string');
-                        const dataType = fileName.replace('.csv', '');
-                        gameFiles.get(gameId)[dataType] = content;
+                            const content = await zipEntry.async('string');
+                            const dataType = fileName.replace('.csv', '');
+                            gameFiles.get(gameId)[dataType] = content;
+                            console.log('Added data for', gameId, dataType);
+                        }
                     }
                 }
             }
 
+            console.log('Processed games:', gameFiles);
+
             // Store processed games
             this.dashboardManager.games = gameFiles;
 
-            status.textContent = 'Upload successful!';
+            status.textContent = `Upload successful! Found ${gameFiles.size} games.`;
             setTimeout(() => {
                 status.textContent = '';
             }, 3000);
 
+            if (gameFiles.size === 0) {
+                throw new Error('No valid game data found in ZIP file');
+            }
+
             this.dashboardManager.loadGamesFromMemory();
         } catch (error) {
             console.error('Error processing zip:', error);
-            status.textContent = 'Error processing zip file';
+            status.textContent = `Error: ${error.message}`;
+            status.style.color = '#ff4444';
+            setTimeout(() => {
+                status.textContent = '';
+                status.style.color = '#0d94e9';
+            }, 5000);
         }
     }
 }

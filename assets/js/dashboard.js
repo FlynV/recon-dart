@@ -44,7 +44,9 @@ class DashboardManager {
     loadGamesFromMemory() {
         const gamesList = document.querySelector('.games-list');
         gamesList.innerHTML = '';
-
+    
+        console.log('Loading games from memory:', this.games);
+    
         // Convert games Map to array and sort by date
         const sortedGames = Array.from(this.games.keys())
             .sort((a, b) => {
@@ -53,15 +55,30 @@ class DashboardManager {
                     const dateB = this.parseFolderDate(b);
                     return dateB - dateA;
                 } catch (e) {
+                    console.error('Error sorting games:', e);
                     return 0;
                 }
             });
-
+    
+        console.log('Sorted games:', sortedGames);
+    
+        if (sortedGames.length === 0) {
+            gamesList.innerHTML = '<div class="no-games">No games found</div>';
+            document.querySelector('.upload-container').style.display = 'block';
+            return;
+        }
+    
         sortedGames.forEach(gameId => {
+            console.log('Creating game item for:', gameId);
             const gameItem = this.createGameItem(gameId);
-            if (gameItem) gamesList.appendChild(gameItem);
+            if (gameItem) {
+                gamesList.appendChild(gameItem);
+                console.log('Added game item to list');
+            } else {
+                console.error('Failed to create game item for:', gameId);
+            }
         });
-
+    
         // Hide upload container after successful load
         document.querySelector('.upload-container').style.display = 
             sortedGames.length > 0 ? 'none' : 'block';

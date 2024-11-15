@@ -20,7 +20,12 @@ body {
     align-items: center;
     width: 100%;
 }
-
+.no-games {
+    text-align: center;
+    padding: 20px;
+    color: #8b9cb3;
+    font-style: italic;
+}
 .map {
     color: #0d94e9;
     font-weight: bold;
