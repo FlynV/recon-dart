@@ -2,6 +2,12 @@ class DashboardManager {
     constructor() {
         this.games = new Map();
         this.fileHandler = new FileHandler(this);
+        this.dataTypes = {
+            'team_data': 'Team Data',
+            'player_data': 'Player Data',
+            'kills_timeline': 'Kills Timeline',
+            'economy_data': 'Economy Data'
+        };
         this.initializeEventListeners();
     }
 
@@ -44,9 +50,9 @@ class DashboardManager {
     loadGamesFromMemory() {
         const gamesList = document.querySelector('.games-list');
         gamesList.innerHTML = '';
-    
+
         console.log('Loading games from memory:', this.games);
-    
+
         // Convert games Map to array and sort by date
         const sortedGames = Array.from(this.games.keys())
             .sort((a, b) => {
@@ -59,15 +65,15 @@ class DashboardManager {
                     return 0;
                 }
             });
-    
+
         console.log('Sorted games:', sortedGames);
-    
+
         if (sortedGames.length === 0) {
             gamesList.innerHTML = '<div class="no-games">No games found</div>';
             document.querySelector('.upload-container').style.display = 'block';
             return;
         }
-    
+
         sortedGames.forEach(gameId => {
             console.log('Creating game item for:', gameId);
             const gameItem = this.createGameItem(gameId);
@@ -78,10 +84,9 @@ class DashboardManager {
                 console.error('Failed to create game item for:', gameId);
             }
         });
-    
+
         // Hide upload container after successful load
-        document.querySelector('.upload-container').style.display = 
-            sortedGames.length > 0 ? 'none' : 'block';
+        document.querySelector('.upload-container').style.display = 'none';
     }
 
     parseFolderDate(folderPath) {
@@ -160,19 +165,32 @@ class DashboardManager {
         document.querySelector('.upload-container').style.display = 'none';
         document.querySelector('.game-details').style.display = 'block';
         
-        const gameData = this.games.get(gameId);
-        if (!gameData) return;
-
         const container = document.getElementById('game_data');
-        container.innerHTML = `
-            <div class="game-header">
-                <h2>${this.getMapName(gameId)}</h2>
-                <p>${this.parseFolderDate(gameId).toLocaleString()}</p>
-            </div>
+        if (!container) {
+            console.error('Game data container not found!');
+            return;
+        }
+
+        const gameData = this.games.get(gameId);
+        if (!gameData) {
+            console.error('No game data found for:', gameId);
+            return;
+        }
+
+        // Clear previous content
+        container.innerHTML = '';
+
+        // Add game header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'game-header';
+        headerDiv.innerHTML = `
+            <h2>${this.getMapName(gameId)}</h2>
+            <p>${this.parseFolderDate(gameId).toLocaleString()}</p>
         `;
+        container.appendChild(headerDiv);
 
         // Display each CSV file's data
-        const dataOrder = ['teams_data', 'player_data', 'kills_timeline', 'economy_data'];
+        const dataOrder = ['team_data', 'player_data', 'kills_timeline', 'economy_data'];
         
         dataOrder.forEach(dataType => {
             if (gameData[dataType]) {
@@ -188,8 +206,7 @@ class DashboardManager {
     }
 
     formatDataTypeName(dataType) {
-        return dataType
-            .split('_')
+        return this.dataTypes[dataType] || dataType.split('_')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     }
@@ -197,7 +214,6 @@ class DashboardManager {
     showGamesList() {
         document.querySelector('.games-list').style.display = 'flex';
         document.querySelector('.game-details').style.display = 'none';
-        // Show upload container only if no games are loaded
         document.querySelector('.upload-container').style.display = 
             this.games.size === 0 ? 'block' : 'none';
     }
@@ -236,11 +252,6 @@ class DashboardManager {
         table.appendChild(tbody);
         
         return table;
-    }
-
-    clearData() {
-        this.games.clear();
-        this.showGamesList();
     }
 }
 
