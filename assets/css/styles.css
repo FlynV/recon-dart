@@ -12,34 +12,10 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 30px;
-}
-/* Add to your existing CSS */
-.game-item-date {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-.no-games {
-    text-align: center;
-    padding: 20px;
-    color: #8b9cb3;
-    font-style: italic;
-}
-.map {
-    color: #0d94e9;
-    font-weight: bold;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #1c2537;
 }
 
-.data-section {
-    margin-bottom: 30px;
-}
-
-.data-section h3 {
-    color: #0d94e9;
-    margin-bottom: 15px;
-}
-/* Add this to your CSS */
 .header h1 {
     margin: 0;
     color: #0d94e9;
@@ -120,11 +96,13 @@ body {
 
 .game-item:hover {
     transform: translateY(-2px);
+    background-color: #1c2537;
 }
 
 .game-item-date {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
 }
 
@@ -133,10 +111,19 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
+.map {
+    color: #0d94e9;
+    font-weight: bold;
+}
+
 .game-details {
     background-color: #131a27;
     border-radius: 8px;
     padding: 20px;
+}
+
+.game-details-header {
+    margin-bottom: 20px;
 }
 
 #back-button {
@@ -146,17 +133,52 @@ body {
     border-radius: 4px;
     color: white;
     cursor: pointer;
-    margin-bottom: 20px;
+    transition: opacity 0.2s;
 }
 
 #back-button:hover {
     opacity: 0.9;
 }
 
+.game-data-container {
+    padding: 20px;
+}
+
+.game-header {
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #1c2537;
+}
+
+.game-header h2 {
+    color: #0d94e9;
+    margin: 0 0 10px 0;
+}
+
+.game-header p {
+    color: #8b9cb3;
+    margin: 0;
+}
+
+.data-section {
+    margin-bottom: 40px;
+}
+
+.data-section h3 {
+    color: #0d94e9;
+    margin: 0 0 15px 0;
+}
+
+.data-section:last-child {
+    margin-bottom: 0;
+}
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    background-color: #131a27;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .data-table th,
@@ -169,10 +191,18 @@ body {
 .data-table th {
     background-color: #1c2537;
     color: #0d94e9;
+    font-weight: 500;
 }
 
 .data-table tr:hover {
     background-color: #1c2537;
+}
+
+.no-games {
+    text-align: center;
+    padding: 20px;
+    color: #8b9cb3;
+    font-style: italic;
 }
 
 @media (max-width: 768px) {
@@ -184,5 +214,11 @@ body {
         flex-direction: column;
         gap: 15px;
         text-align: center;
+    }
+
+    .game-item-date {
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-start;
     }
 }
