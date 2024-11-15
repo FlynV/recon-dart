@@ -20,16 +20,12 @@ class FileHandler {
                 if (!zipEntry.dir) {
                     console.log('Processing file:', path);
                     
-                    // Split path and clean it
-                    const pathParts = path.split(/[\/\\]/).filter(part => part.length > 0);
-                    console.log('Path parts:', pathParts);
-
-                    // Expecting: valorant_scrims/2024-03-20T15-30-00-000Z_Ascent/file.csv
-                    if (pathParts.length >= 2) {
-                        const gameId = pathParts[1]; // The folder with timestamp and map
-                        const fileName = pathParts[2]; // The CSV file name
-
-                        console.log('Game ID:', gameId, 'File:', fileName);
+                    // Split path and get the folder name and file name
+                    const pathMatch = path.match(/([^\/]+)\/([^\/]+)$/);
+                    
+                    if (pathMatch) {
+                        const [, gameId, fileName] = pathMatch;
+                        console.log('Matched - Game ID:', gameId, 'File:', fileName);
 
                         if (gameId && fileName && fileName.endsWith('.csv')) {
                             if (!gameFiles.has(gameId)) {
@@ -41,11 +37,17 @@ class FileHandler {
                             gameFiles.get(gameId)[dataType] = content;
                             console.log('Added data for', gameId, dataType);
                         }
+                    } else {
+                        console.log('No match for path:', path);
                     }
                 }
             }
 
             console.log('Processed games:', gameFiles);
+
+            if (gameFiles.size === 0) {
+                throw new Error('No valid game data found in ZIP file');
+            }
 
             // Store processed games
             this.dashboardManager.games = gameFiles;
@@ -54,10 +56,6 @@ class FileHandler {
             setTimeout(() => {
                 status.textContent = '';
             }, 3000);
-
-            if (gameFiles.size === 0) {
-                throw new Error('No valid game data found in ZIP file');
-            }
 
             this.dashboardManager.loadGamesFromMemory();
         } catch (error) {
