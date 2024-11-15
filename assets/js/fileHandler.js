@@ -11,22 +11,37 @@ class FileHandler {
             const zip = await JSZip.loadAsync(file);
             this.dashboardManager.games.clear();
 
+            // Group files by game session
+            const gameFiles = new Map();
+
             for (const [path, zipEntry] of Object.entries(zip.files)) {
                 if (!zipEntry.dir) {
+                    // Split path into components
                     const pathParts = path.split('/');
-                    const gameId = pathParts[1];
-                    const fileName = pathParts[2];
+                    
+                    // Skip if not in correct structure
+                    if (pathParts.length < 2) continue;
 
-                    if (!this.dashboardManager.games.has(gameId)) {
-                        this.dashboardManager.games.set(gameId, {});
+                    // Get game session ID (folder name)
+                    const gameId = pathParts[0];
+                    const fileName = pathParts[1];
+
+                    // Initialize game session if not exists
+                    if (!gameFiles.has(gameId)) {
+                        gameFiles.set(gameId, {});
                     }
 
-                    if (fileName) {
+                    // Read file content
+                    if (fileName.endsWith('.csv')) {
                         const content = await zipEntry.async('string');
-                        this.dashboardManager.games.get(gameId)[fileName.replace('.csv', '')] = content;
+                        const dataType = fileName.replace('.csv', '');
+                        gameFiles.get(gameId)[dataType] = content;
                     }
                 }
             }
+
+            // Store processed games
+            this.dashboardManager.games = gameFiles;
 
             status.textContent = 'Upload successful!';
             setTimeout(() => {

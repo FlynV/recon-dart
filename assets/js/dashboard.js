@@ -63,39 +63,75 @@ class DashboardManager {
         });
     }
 
-    createGameItem(gameId) {
-        try {
-            const date = this.parseFolderDate(gameId);
-            
-            const gameItem = document.createElement('div');
-            gameItem.className = 'game-item';
-            
-            const formattedDate = date.toLocaleDateString('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric'
-            });
+    // Update this method in the DashboardManager class
+parseFolderDate(folderPath) {
+    try {
+        const folderName = folderPath.split('\\').pop() || folderPath;
+        
+        // If it's a data file name, skip it
+        if (folderName.endsWith('.csv')) {
+            throw new Error('Not a date folder');
+        }
 
-            const formattedTime = date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
+        // Extract timestamp from folder name
+        const timestamp = folderName;
+        
+        // Create date object
+        const date = new Date(timestamp);
+        
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid date");
+        }
+        
+        return date;
+    } catch (e) {
+        console.error("Error parsing date:", e);
+        return null;
+    }
+}
 
-            gameItem.innerHTML = `
-                <div class="game-item-date">
-                    <div class="date">${formattedDate}</div>
-                    <div class="time">${formattedTime}</div>
-                </div>
-            `;
-            
-            gameItem.addEventListener('click', () => this.loadGameDetails(gameId));
-            return gameItem;
-        } catch (e) {
-            console.error("Error creating game item:", e);
+// Update createGameItem method
+createGameItem(gameId) {
+    try {
+        // Skip if not a valid game folder
+        if (gameId.endsWith('.csv')) {
             return null;
         }
+
+        const date = new Date(gameId);
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+        
+        const gameItem = document.createElement('div');
+        gameItem.className = 'game-item';
+        
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        });
+
+        const formattedTime = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        gameItem.innerHTML = `
+            <div class="game-item-date">
+                <div class="date">${formattedDate}</div>
+                <div class="time">${formattedTime}</div>
+            </div>
+        `;
+        
+        gameItem.addEventListener('click', () => this.loadGameDetails(gameId));
+        return gameItem;
+    } catch (e) {
+        console.error("Error creating game item:", e);
+        return null;
     }
+}
 
     loadGameDetails(gameId) {
         document.querySelector('.games-list').style.display = 'none';
